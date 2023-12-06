@@ -19,7 +19,19 @@ public class SpringCleaningHamsterGame extends SimpleHamsterGame {
 
 	@Override
 	protected void run() {
-		// Put your code for part A exercise 2 (e) here.
+
+
+		for (int i = 1; i <= 5; i++) {
+			if (i % 2 == 1) {
+				paule.pickGrain();
+			}
+			paule.move();
+		}
+		paule.turnLeft();
+		paule.turnLeft();
+		while (paule.frontIsClear()) {
+			paule.move();
+		}
 	}
 }
 
