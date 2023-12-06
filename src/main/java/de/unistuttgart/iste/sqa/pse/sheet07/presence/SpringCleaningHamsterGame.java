@@ -22,3 +22,4 @@ public class SpringCleaningHamsterGame extends SimpleHamsterGame {
 		// Put your code for part A exercise 2 (e) here.
 	}
 }
+
