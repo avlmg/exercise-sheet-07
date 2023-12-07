@@ -5,8 +5,8 @@ import de.hamstersimulator.objectsfirst.external.simple.game.SimpleHamsterGame;
 /**
  * Describe the purpose of this class here.
  *
- * @author (Your name)
- * @version (a version number or a date)
+ * @author AmoresSchneyinck
+ * @version 07122023
  */
 public class PainterPauleHamsterGame extends SimpleHamsterGame {
 
@@ -25,38 +25,65 @@ public class PainterPauleHamsterGame extends SimpleHamsterGame {
 	 */
 	@Override
 	protected void run() {
-		// insert your code here
+		int requiredGrains = getNumbeOfRequiredGrains();
+		int paulesGrains = getPaulesGrainCount();
+
+		if (requiredGrains > paulesGrains) {
+			System.out.println("Paule does not have enough grains to paint the entire spiral.");
+			return;
+		}
+
+		while (getDistanceToWall() > 0) {
+			paintLine();
+			turnAndMove();
+		}
 	}
 
-	////////////////////////////////////////
-	// helpers to ascertain preconditions //
-	////////////////////////////////////////
+	/**
+	 * Paints a line of the spiral.
+	 */
+	private void paintLine() {
+		int distance = getDistanceToWall();
+		int grainsToPut = Math.min(getPaulesGrainCount(), distance);
+
+    /*@
+    @ loop_invariant Paule puts a grain for each already executed loop iteration.
+    @ decreasing grainsToPut
+    @*/
+		while (grainsToPut > 0) {
+			paule.putGrain();
+			grainsToPut--;
+		}
+	}
+
+	/**
+	 * Turns and moves Paule to the next position in the spiral.
+	 */
+	private void turnAndMove() {
+		paule.turnLeft();
+		if (!paule.frontIsClear()) {
+			System.out.println("Painting complete!");
+			return;
+		}
+		paule.move();
+		paule.turnLeft();
+	}
 
 	/**
 	 * Calculate paules distance to the next wall.
-	 *
+	 * <p>
 	 * (Only Works, if the territory is quadratic and has no inner walls)
 	 *
 	 * @return paule's distance to the next wall.
 	 */
 	private int getDistanceToWall() {
 		int size = game.getTerritory().getTerritorySize().getColumnCount();
-		switch (paule.getDirection()) {
-			case NORTH: {
-				return paule.getLocation().getRow();
-			}
-			case EAST: {
-				return size - paule.getLocation().getColumn();
-			}
-			case SOUTH: {
-				return size - paule.getLocation().getRow();
-			}
-			case WEST: {
-				return paule.getLocation().getColumn();
-			}
-			default:
-				throw new IllegalArgumentException("Unexpected value: " + paule.getDirection());
-		}
+        return switch (paule.getDirection()) {
+            case NORTH -> paule.getLocation().getRow();
+            case EAST -> size - paule.getLocation().getColumn();
+            case SOUTH -> size - paule.getLocation().getRow();
+            case WEST -> paule.getLocation().getColumn();
+        };
 	}
 
 	/**
@@ -95,7 +122,7 @@ public class PainterPauleHamsterGame extends SimpleHamsterGame {
 
 		int total = lineSize;
 		/*@
-		@ loop_invariant total is the sum of the previous total plus two times the current linesize + 2
+		@ loop_invariant total is the sum of the previous total plus two times the current lineSize + 2
 		@ decreasing lineSize
 		@*/
 		while (lineSize > 0) {

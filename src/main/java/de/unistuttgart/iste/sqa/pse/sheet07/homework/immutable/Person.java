@@ -11,8 +11,8 @@ public final class Person {
 	// @ private instance invariant name != null && name.length() > 0;
 	// @ private instance invariant birthDate != null;
 
-	private final String name;
-	private final Date birthDate;
+	private String name;
+	private Date birthDate;
 
 	/*@
 	@ requires name != null && name.length() > 0;
