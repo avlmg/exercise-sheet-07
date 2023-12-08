@@ -1,5 +1,8 @@
 package de.unistuttgart.iste.sqa.pse.sheet07.homework.painter;
 
+import de.hamstersimulator.objectsfirst.datatypes.Direction;
+import de.hamstersimulator.objectsfirst.datatypes.Location;
+import de.hamstersimulator.objectsfirst.datatypes.LocationVector;
 import de.hamstersimulator.objectsfirst.external.simple.game.SimpleHamsterGame;
 
 /**
@@ -21,52 +24,71 @@ public class PainterPauleHamsterGame extends SimpleHamsterGame {
 	}
 
 	/**
-	 * Put the hamster code into this method.
+	 * Paints a line of the spiral.
 	 */
 	@Override
 	protected void run() {
+		int grainsToPut = getPaulesGrainCount();
 		int requiredGrains = getNumbeOfRequiredGrains();
-		int paulesGrains = getPaulesGrainCount();
-
-		if (requiredGrains > paulesGrains) {
-			System.out.println("Paule does not have enough grains to paint the entire spiral.");
-			return;
+		if (requiredGrains>grainsToPut) {
+			paule.write("I do not have enough grains!");
 		}
-
-		while (getDistanceToWall() > 0) {
-			paintLine();
+		/*@
+    	@ loop_invariant Paule puts a grain for each already executed loop iteration.
+    	@ decreasing grainsToPut
+    	@*/
+		while (getDistanceToWall() >= 0) {
+			while (grainsToPut > 0&&!paule.grainAvailable()) {
+				paule.putGrain();
+				grainsToPut--;
+			}
 			turnAndMove();
+			if (grainsToPut==0) {
+				paule.move();
+				turnRight();
+				paule.write("Painting complete!");
+				break;
+			}
 		}
 	}
+	private boolean spiralTurn() {
+		Direction turnDic = paule.getDirection();
+		int turnRow = paule.getLocation().getRow();
+		int turnCol = paule.getLocation().getColumn();
 
+		if (turnDic == Direction.NORTH) {
+			Location testingLoc = new Location(turnRow - 2, turnCol);
+            return game.getTerritory().getNumberOfGrainsAt(testingLoc) >0;
+		} else if (turnDic == Direction.WEST) {
+			Location testingLoc = new Location(turnRow, turnCol - 2);
+            return game.getTerritory().getNumberOfGrainsAt(testingLoc) >0;
+		} else if (turnDic == Direction.EAST) {
+			Location testingLoc = new Location(turnRow, turnCol + 2);
+            return game.getTerritory().getNumberOfGrainsAt(testingLoc) >0;
+		} else if (turnDic == Direction.SOUTH) {
+			Location testingLoc = new Location(turnRow + 2, turnCol);
+            return game.getTerritory().getNumberOfGrainsAt(testingLoc) > 0;
+		} else {
+			return false;
+		}
+    }
 	/**
-	 * Paints a line of the spiral.
+	 *  Makes Paule turn right
 	 */
-	private void paintLine() {
-		int distance = getDistanceToWall();
-		int grainsToPut = Math.min(getPaulesGrainCount(), distance);
-
-    /*@
-    @ loop_invariant Paule puts a grain for each already executed loop iteration.
-    @ decreasing grainsToPut
-    @*/
-		while (grainsToPut > 0) {
-			paule.putGrain();
-			grainsToPut--;
+	private void turnRight() {
+		for (int i=0; i<3; i++) {
+			paule.turnLeft();
 		}
 	}
-
 	/**
 	 * Turns and moves Paule to the next position in the spiral.
 	 */
 	private void turnAndMove() {
-		paule.turnLeft();
-		if (!paule.frontIsClear()) {
-			System.out.println("Painting complete!");
-			return;
+		if (!paule.frontIsClear()||spiralTurn()) {
+			turnRight();
+		} else {
+			paule.move();
 		}
-		paule.move();
-		paule.turnLeft();
 	}
 
 	/**
@@ -78,12 +100,22 @@ public class PainterPauleHamsterGame extends SimpleHamsterGame {
 	 */
 	private int getDistanceToWall() {
 		int size = game.getTerritory().getTerritorySize().getColumnCount();
-        return switch (paule.getDirection()) {
-            case NORTH -> paule.getLocation().getRow();
-            case EAST -> size - paule.getLocation().getColumn();
-            case SOUTH -> size - paule.getLocation().getRow();
-            case WEST -> paule.getLocation().getColumn();
-        };
+		switch (paule.getDirection()) {
+			case NORTH: {
+				return paule.getLocation().getRow() - 1;
+			}
+			case EAST: {
+				return size - paule.getLocation().getColumn() - 2;
+			}
+			case SOUTH: {
+				return size - paule.getLocation().getRow() - 2;
+			}
+			case WEST: {
+				return paule.getLocation().getColumn() - 1;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + paule.getDirection());
+		}
 	}
 
 	/**
